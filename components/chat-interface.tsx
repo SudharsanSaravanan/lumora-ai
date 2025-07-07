@@ -22,10 +22,47 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  const [viewportHeight, setViewportHeight] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const initialProcessedRef = useRef(false)
+
+  // Handle viewport changes for mobile keyboard detection
+  useEffect(() => {
+    const handleViewportChange = () => {
+      if (typeof window !== "undefined") {
+        const currentHeight = window.visualViewport?.height || window.innerHeight
+        const fullHeight = window.screen.height
+
+        // Detect if keyboard is visible (viewport height significantly reduced)
+        const keyboardThreshold = fullHeight * 0.75
+        const isKeyboard = currentHeight < keyboardThreshold
+
+        setIsKeyboardVisible(isKeyboard)
+        setViewportHeight(currentHeight)
+      }
+    }
+
+    // Initial setup
+    handleViewportChange()
+
+    // Listen for viewport changes
+    if (typeof window !== "undefined" && window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleViewportChange)
+      window.visualViewport.addEventListener("scroll", handleViewportChange)
+
+      return () => {
+        window.visualViewport?.removeEventListener("resize", handleViewportChange)
+        window.visualViewport?.removeEventListener("scroll", handleViewportChange)
+      }
+    } else {
+      // Fallback for browsers without visualViewport support
+      window.addEventListener("resize", handleViewportChange)
+      return () => window.removeEventListener("resize", handleViewportChange)
+    }
+  }, [])
 
   // Auto-scroll to the latest message
   useEffect(() => {
@@ -41,33 +78,6 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
     }
   }, [input])
 
-  // Handle mobile keypad: Adjust input box position
-  useEffect(() => {
-    const handleResize = () => {
-      if (inputContainerRef.current) {
-        inputContainerRef.current.style.bottom = "0px"
-        if (window.visualViewport) {
-          const viewportHeight = window.visualViewport.height
-          const offset = window.innerHeight - viewportHeight
-          if (offset > 100) {
-            // Threshold to detect keypad
-            inputContainerRef.current.style.transform = `translateY(-${offset}px)`
-          } else {
-            inputContainerRef.current.style.transform = "translateY(0)"
-          }
-        }
-      }
-    }
-
-    window.visualViewport?.addEventListener("resize", handleResize)
-    window.addEventListener("resize", handleResize)
-
-    return () => {
-      window.visualViewport?.removeEventListener("resize", handleResize)
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [])
-
   // Handle initial question ONCE
   useEffect(() => {
     if (initialQuestion && !initialProcessedRef.current) {
@@ -78,7 +88,6 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
 
   const processQuestion = async (question: string) => {
     if (isLoading) return
-
     setIsLoading(true)
 
     const userMessage: ChatMessage = {
@@ -167,9 +176,24 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-black text-white min-h-screen">
+    <div
+      className="flex flex-col bg-black text-white transition-all duration-300"
+      style={{
+        height: isKeyboardVisible ? `${viewportHeight}px` : "100vh",
+        minHeight: isKeyboardVisible ? `${viewportHeight}px` : "100vh",
+      }}
+    >
       {/* Messages Container - Proper padding to avoid fixed input overlap */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 pb-32 sm:pb-36 md:pb-40">
+      <div
+        className={`flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 transition-all duration-300 ${
+          isKeyboardVisible ? "pb-20" : "pb-32 sm:pb-36 md:pb-40"
+        }`}
+        style={{
+          height: isKeyboardVisible
+            ? `${viewportHeight - 120}px` // Account for input area
+            : "calc(100vh - 160px)",
+        }}
+      >
         {messages.length === 0 && (
           <div className="text-center text-white py-4 sm:py-8">
             <Brain className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-4 opacity-50 text-white" />
@@ -235,7 +259,6 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
                           <div className="whitespace-pre-wrap text-xs sm:text-sm md:text-base leading-tight sm:leading-relaxed text-white break-words overflow-wrap-anywhere hyphens-auto max-w-full">
                             {message.content}
                           </div>
-
                           {message.followUpQuestions?.length && (
                             <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-600">
                               <p className="text-xs text-gray-300 mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
@@ -270,10 +293,15 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Fixed at Bottom with high z-index */}
+      {/* Input Area - Fixed at Bottom with keyboard-aware positioning */}
       <div
         ref={inputContainerRef}
-        className="fixed bottom-0 left-0 right-0 border-t border-gray-800 p-2 sm:p-3 md:p-4 bg-black/95 backdrop-blur-sm z-50 transition-transform duration-200"
+        className={`fixed left-0 right-0 bg-black/95 backdrop-blur-sm border-t border-gray-800 z-50 transition-all duration-300 ${
+          isKeyboardVisible ? "p-2" : "p-2 sm:p-3 md:p-4"
+        }`}
+        style={{
+          bottom: isKeyboardVisible ? "0px" : "0px",
+        }}
       >
         <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2 items-center max-w-full mx-auto">
           <div className="flex-1 relative min-w-0 max-w-full">
@@ -294,6 +322,7 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
                 maxWidth: "100%",
                 overflowX: "hidden",
                 overflowY: "hidden",
+                fontSize: isKeyboardVisible ? "16px" : "", // Prevent zoom on iOS
               }}
             />
             <Button
@@ -307,7 +336,11 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
         </form>
 
         {/* Mode Indicator */}
-        <div className="mt-1 sm:mt-2 text-xs text-gray-400 text-center">
+        <div
+          className={`text-xs text-gray-400 text-center transition-all duration-300 ${
+            isKeyboardVisible ? "mt-1" : "mt-1 sm:mt-2"
+          }`}
+        >
           {mode === "reflection" && "Socratic questioning mode"}
           {mode === "answer" && "Direct explanation mode"}
           {mode === "leetcode" && "Algorithm teaching mode"}
