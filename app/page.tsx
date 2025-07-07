@@ -88,7 +88,7 @@ export default function Home() {
       </header>
 
       {/* Main Content - Responsive with bottom padding for fixed input */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4 sm:p-8 pb-32 sm:pb-36">
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4 sm:p-8 pb-32 sm:pb-36 md:pt-20">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-5xl sm:text-8xl font-bold tracking-wide text-center mb-4 bg-gradient-to-b from-white to-black text-transparent bg-clip-text">
             Lumora-ai
@@ -199,7 +199,7 @@ export default function Home() {
                   variant={mode === m.key ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setMode(m.key as any)}
-                  className="text-xs px-2 py-1 text-white hover:text-gray-700"
+                  className="text-xs px-2 py-1 text-gray-300 bg-gray-900 hover:text-gray-700"
                 >
                   {m.icon} {m.label}
                 </Button>
