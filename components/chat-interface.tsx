@@ -303,7 +303,7 @@ export function ChatInterface({ mode, initialQuestion }: ChatInterfaceProps) {
           bottom: isKeyboardVisible ? "0px" : "0px",
         }}
       >
-        <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2 items-center max-w-full mx-auto">
+        <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2 items-center max-w-4xl mx-auto">
           <div className="flex-1 relative min-w-0 max-w-full">
             <textarea
               ref={textareaRef}
