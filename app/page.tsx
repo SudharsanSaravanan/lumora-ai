@@ -1,21 +1,20 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Send } from "lucide-react"
-import { ChatInterface } from "@/components/chat-interface"
+import React, { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Send } from 'lucide-react'
 
 export default function Home() {
-  const [question, setQuestion] = useState("")
-  const [mode, setMode] = useState<"reflection" | "answer" | "leetcode" | "learning-plan">("reflection")
-  const [showChat, setShowChat] = useState(false)
+  const [question, setQuestion] = useState('')
+  const [mode, setMode] = useState<'reflection' | 'answer' | 'leetcode' | 'learning-plan'>('reflection')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"
+      textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
     }
   }, [question])
@@ -23,42 +22,15 @@ export default function Home() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!question.trim()) return
-    setShowChat(true)
+    const encodedQuestion = encodeURIComponent(question)
+    router.push(`/chat?mode=${mode}&question=${encodedQuestion}`)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit(e)
     }
-  }
-
-  if (showChat) {
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col">
-        <header className="relative z-10 flex items-center justify-between p-3 sm:p-4 border-b border-gray-800">
-          <button onClick={() => setShowChat(false)}>
-            <h1 className="text-lg sm:text-xl font-bold tracking-wide text-center bg-gradient-to-b from-white to-black text-transparent bg-clip-text">
-              Lumora-ai
-            </h1>
-          </button>
-          <div className="flex items-center gap-2">
-            <a
-              href="https://www.linkedin.com/in/your-linkedin-url"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="md:px-3 md:py-1.5 px-5 py-1 text-xs md:text-sm bg-gradient-to-r from-gray-900 via-black to-gray-900 text-gray-400 border border-white/20 rounded-xl md:rounded-2xl font-serif shadow-md hover:shadow-lg hover:brightness-125 transition-all duration-300">
-                Contact
-              </button>
-            </a>
-          </div>
-        </header>
-        <div className="flex-1">
-          <ChatInterface mode={mode} initialQuestion={question} />
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -70,16 +42,12 @@ export default function Home() {
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-3 sm:p-4 border-b border-gray-800">
-        <h1 className="text-lg sm:text-xl font-bold tracking-wide text-center bg-gradient-to-b from-white to-black text-transparent bg-clip-text">
+        <h1 className="text-lg sm:text-xl font-bold tracking-wide bg-gradient-to-b from-white to-black text-transparent bg-clip-text">
           Lumora-ai
         </h1>
         <div className="flex items-center gap-2">
-          <a
-            href="https://www.linkedin.com/in/your-linkedin-url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className="md:px-3 md:py-1.5 px-5 py-1 text-xs md:text-sm bg-gradient-to-r from-gray-900 via-black to-gray-900 text-gray-400 border border-white/20 rounded-xl md:rounded-2xl font-serif shadow-md hover:shadow-lg hover:brightness-125 transition-all duration-300">
+          <a href="https://www.linkedin.com/in/your-linkedin-url" target="_blank" rel="noopener noreferrer">
+            <button className="md:px-3 md:py-1.5 px-5 py-1 text-xs md:text-sm bg-gradient-to-r from-gray-900 via-black to-gray-900 text-gray-400 border border-white/20 rounded-xl font-serif shadow-md hover:shadow-lg hover:brightness-125 transition-all duration-300">
               Contact
             </button>
           </a>
@@ -95,32 +63,32 @@ export default function Home() {
           <p className="text-gray-300 text-base sm:text-lg">Thoughts That Shine Brighter Than Stars</p>
         </div>
 
-        {/* Mode Cards - Now 2 per row on mobile with smaller fonts */}
+        {/* Mode Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-8 sm:mb-12 w-full max-w-6xl">
           {[
             {
-              key: "reflection",
-              title: "Reflection Mode",
-              description: "Guides you with questions to think through problems.",
-              border: "border-blue-500 bg-blue-500/10",
+              key: 'reflection',
+              title: 'Reflection Mode',
+              description: 'Guides you with questions to think through problems.',
+              border: 'border-blue-500 bg-blue-500/10',
             },
             {
-              key: "answer",
-              title: "Answer Mode",
-              description: "Provides direct answers with explanations.",
-              border: "border-green-500 bg-green-500/10",
+              key: 'answer',
+              title: 'Answer Mode',
+              description: 'Provides direct answers with explanations.',
+              border: 'border-green-500 bg-green-500/10',
             },
             {
-              key: "leetcode",
-              title: "LeetCode Help",
-              description: "Algorithm understanding before code.",
-              border: "border-purple-500 bg-purple-500/10",
+              key: 'leetcode',
+              title: 'LeetCode Help',
+              description: 'Algorithm understanding before code.',
+              border: 'border-purple-500 bg-purple-500/10',
             },
             {
-              key: "learning-plan",
-              title: "Learning Plan",
-              description: "Structured learning roadmaps.",
-              border: "border-orange-500 bg-orange-500/10",
+              key: 'learning-plan',
+              title: 'Learning Plan',
+              description: 'Structured learning roadmaps.',
+              border: 'border-orange-500 bg-orange-500/10',
             },
           ].map(({ key, title, description, border }) => (
             <Card
@@ -128,7 +96,7 @@ export default function Home() {
               className={`cursor-pointer transition-all duration-200 border ${
                 mode === key
                   ? border
-                  : "border-gray-800 bg-gray-900/50 hover:border-gray-700"
+                  : 'border-gray-800 bg-gray-900/50 hover:border-gray-700'
               }`}
               onClick={() => setMode(key as any)}
             >
@@ -165,18 +133,18 @@ export default function Home() {
             </div>
           </form>
 
-          {/* Mode buttons below input */}
+          {/* Mode buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between mt-2 sm:mt-3 gap-2 text-sm text-gray-400">
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center sm:justify-start">
               {[
-                { key: "reflection", label: "Reflection" },
-                { key: "answer", label: "Answer" },
-                { key: "leetcode", label: "LeetCode" },
-                { key: "learning-plan", label: "Plan" },
+                { key: 'reflection', label: 'Reflection' },
+                { key: 'answer', label: 'Answer' },
+                { key: 'leetcode', label: 'LeetCode' },
+                { key: 'learning-plan', label: 'Plan' },
               ].map((m) => (
                 <Button
                   key={m.key}
-                  variant={mode === m.key ? "default" : "ghost"}
+                  variant={mode === m.key ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setMode(m.key as any)}
                   className="text-xs px-2 py-1 text-gray-300 bg-gray-900 hover:text-gray-700"
@@ -187,13 +155,13 @@ export default function Home() {
             </div>
             <div className="text-center sm:text-right">
               <span className="text-xs text-gray-400 block">
-                {mode === "reflection"
-                  ? "Guiding questions"
-                  : mode === "answer"
-                  ? "Direct explanations"
-                  : mode === "leetcode"
-                  ? "Algorithm teaching"
-                  : "Learning roadmaps"}
+                {mode === 'reflection'
+                  ? 'Guiding questions'
+                  : mode === 'answer'
+                  ? 'Direct explanations'
+                  : mode === 'leetcode'
+                  ? 'Algorithm teaching'
+                  : 'Learning roadmaps'}
               </span>
             </div>
           </div>
