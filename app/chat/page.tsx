@@ -1,21 +1,13 @@
-'use client'
+// app/chat/page.tsx
+import React, { Suspense } from 'react'
+import { ChatClient } from '@/components/chat-client'
 
-import { useSearchParams } from 'next/navigation'
-import { ChatInterface } from '@/components/chat-interface'
-import React from 'react'
+export const dynamic = 'force-dynamic'
 
 export default function ChatPage() {
-  const searchParams = useSearchParams()
-  const mode = searchParams.get('mode') as
-    | 'reflection'
-    | 'answer'
-    | 'leetcode'
-    | 'learning-plan'
-    | null
-  const question = searchParams.get('question') || ''
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
+      {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-3 sm:p-4 border-b border-gray-800">
         <a href="/" className="text-lg font-bold bg-gradient-to-b from-white to-black text-transparent bg-clip-text">
           Lumora-ai
@@ -30,8 +22,12 @@ export default function ChatPage() {
           </button>
         </a>
       </header>
+
+      {/* Chat Client in Suspense */}
       <div className="flex-1">
-        <ChatInterface mode={mode || 'reflection'} initialQuestion={question} />
+        <Suspense fallback={<div className="p-4 text-gray-400">Loading chat...</div>}>
+          <ChatClient />
+        </Suspense>
       </div>
     </div>
   )
